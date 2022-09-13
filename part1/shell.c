@@ -16,7 +16,8 @@ int main(){
     char inpt[1000];
     printf("$");
     while(fgets(inpt, sizeof(inpt), stdin) != NULL){
-        processInput(inpt);
+        if(strcmp(inpt, "\n"))
+            processInput(inpt);
         printf("$");
     }
 }
