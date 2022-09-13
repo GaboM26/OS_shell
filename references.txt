@@ -1,13 +1,8 @@
-/* include the following statement if you have not referenced anything */
-In doing my homework, I certify that I have not used any materials
-other than the course textbooks and Linux source code, and I have not
-discussed the homework assignment with anyone other than the W4118
-instructional staff and, for the team programming portion of the assignment,
-my team.
-
 /* OR delete the above statement and include a list of references */
-1.  http://www.sanfoundry.com/operating-system-questions-answers-processes/,
-used for answering Exercise 1.4.
+1.
+https://stackoverflow.com/questions/11824685/what-does-the-second-parameter-of-waitpid-mean,
+used in order to remember a bit how the waitpid function worked and what
+status was for
 
 2.  John Doe (abc1234@columbia.edu), discussed concepts for Exercise 1.6.
 

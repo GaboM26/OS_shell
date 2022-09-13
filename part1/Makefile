@@ -15,3 +15,11 @@ clean:
 
 .PHONY: all
 all: clean w4118_sh
+
+.PHONY: do
+do: all
+	./w4118_sh
+
+.PHONY: val
+val: all
+	valgrind --leak-check=yes ./w4118_sh
