@@ -1,15 +1,10 @@
-/* OR delete the above statement and include a list of references */
 1.
 https://stackoverflow.com/questions/11824685/what-does-the-second-parameter-of-waitpid-mean,
 used in order to remember a bit how the waitpid function worked and what
 status was for
 
-2.  John Doe (abc1234@columbia.edu), discussed concepts for Exercise 1.6.
-
-3.  http://www.sanfoundry.com/operating-system-questions-answers-processes/,
-used for doing programming part 3.
-
-4.  http://wiki.c2.com/?WeirdErrorMessages, used for debugging programming part\
+2. https://cs3157.github.io/www/2022-1/resources/guides/git-tutorial.html
+Used in order for a refresher on how to use git
 
 David Gabriel Millares Bellido
 DGM2148
