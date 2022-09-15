@@ -7,13 +7,17 @@
 #include<errno.h>
 #include<unistd.h>
 
-void processInput(char *);
+void runProg(char *);
 void removeNL(char *);
-void errPrint();
+void errPrint(int );
 char *progName(char *);
+void validInput(char *);
+int min(int, int);
+void myExit();
+void cd(char *);
 
 static void die(const char *err){
-    errPrint();
+    errPrint(1);
     exit(-1);
 }
 
@@ -22,12 +26,37 @@ int main(){
     printf("$");
     while(fgets(inpt, sizeof(inpt), stdin) != NULL){
         if(strcmp(inpt, "\n"))
-            processInput(inpt);
+            validInput(inpt);
         printf("$");
     }
 }
 
-void processInput(char *inpt){
+//something was entered as input (no blank line)
+//checks if it is valid and sends it to appropriate function
+void validInput(char *inpt){
+    //means it is trying to go to a folder and run executable
+    if(inpt[0]=='/'){
+        runProg(inpt);
+        return ;
+    }
+
+    //Manipulate input now that we know its not trying to go to folder
+    char myInpt[strlen(inpt) + 1];
+    strcpy(myInpt, inpt);
+
+    //divide into tokens
+    char *spcmd = strtok(myInpt, " ");
+
+    if(strchr(spcmd, '\n') != NULL)
+        removeNL(spcmd);
+    if(!strcmp(spcmd, "exit"))
+        myExit();
+    else if(!strcmp(spcmd, "cd"))
+        cd(inpt);
+    else
+        errPrint(0);
+}
+void runProg(char *inpt){
     //get command and save a copy to execute (manipulated pointers)
     int st; 
     char *tok = " ";
@@ -61,20 +90,28 @@ void processInput(char *inpt){
     }
     else{ //parent process
         if(waitpid(pid, &st, 0) != pid){
-            errPrint();
+            errPrint(1);
         }
     }
 
 }
 
+//removes next line from a string
+//Note that the only case this will happen is if one presses
+//enter at the very end due to how fgets works
 void removeNL(char *str){
     str[strlen(str)-1] = 0;
 }
 
-void errPrint(){
-    fprintf(stderr, "error: %s\n", strerror(errno));
+//useful function in this case to print errors as required
+void errPrint(int realErr){
+    if(realErr)
+        fprintf(stderr, "error: %s\n", strerror(errno));
+    else
+        fprintf(stderr, "error: unknown command\n");
 }
 
+//Returns pointer to only the program name given a path
 char *progName(char *path){
     char *name;
     char *delim = "/";
@@ -82,5 +119,23 @@ char *progName(char *path){
     while((tmp=strtok(NULL, delim)) != NULL){
         name = tmp;
     }
+    //removes next line if necessary
+    if(strchr(name, '\n') != NULL)
+        removeNL(name);
     return name;
+}
+
+int min(int a, int b){
+    if(a>b){
+        return b;
+    }
+    return a;
+}
+
+void myExit(){
+    exit(0);
+}
+
+void cd(char *inpt){
+
 }
