@@ -52,7 +52,7 @@ void validInput(char *inpt){
     if(!strcmp(spcmd, "exit"))
         myExit();
     else if(!strcmp(spcmd, "cd"))
-        cd(inpt);
+        cd(strtok(NULL, " "));
     else
         errPrint(0);
 }
@@ -137,5 +137,12 @@ void myExit(){
 }
 
 void cd(char *inpt){
+    char buff[100];
+    
+    if(strchr(inpt, '\n') != NULL)
+        removeNL(inpt);
+
+    if(chdir(inpt))
+        errPrint(1);
 
 }
