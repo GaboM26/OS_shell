@@ -16,20 +16,28 @@ int min(int, int);
 void myExit(char *);
 void cd(char *);
 
-static void die(const char *err){
+static void die(char *inpt){
     errPrint(1);
-    exit(-1);
+    myExit(inpt);
 }
 
 int main(){
-    size_t size = 1;
+    size_t size = 100;
+    int k;
     char *inpt = malloc(size);
     printf("$");
-    while((getline(&inpt, &size, stdin)) != -1){
+    while((k = getline(&inpt, &size, stdin)) > 0){
         if(strcmp(inpt, "\n"))
             validInput(inpt);
         printf("$");
     }
+
+    if(k == -1 && errno != 0){
+        errPrint(1);
+    }
+    //if errno is 0 then no error occured
+    myExit(inpt);
+    
 }
 
 //something was entered as input (no blank line)
@@ -63,7 +71,7 @@ void runProg(char *inpt){
     //get command and save a copy to execute (manipulated pointers)
     int st; 
     char *tok = " ";
-    char *args[1000];
+    char *args[5000];
     char *cmd = strtok(inpt, tok);    
     char prgrm[strlen(cmd) + 1]; 
     strcpy(prgrm, cmd);
@@ -89,7 +97,7 @@ void runProg(char *inpt){
     }
     else if(pid == 0){ //child process
         execv(prgrm, args);
-        die("ERROR");
+        die(inpt);
     }
     else{ //parent process
         if(waitpid(pid, &st, 0) != pid){
@@ -116,9 +124,9 @@ void errPrint(int realErr){
 
 //Returns pointer to only the program name given a path
 char *progName(char *path){
-    char *name;
     char *delim = "/";
-    char *tmp = strtok(path, delim);
+    char *name= strtok(path, delim);
+    char *tmp; 
     while((tmp=strtok(NULL, delim)) != NULL){
         name = tmp;
     }
