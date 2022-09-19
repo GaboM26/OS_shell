@@ -16,6 +16,8 @@ int min(int, int);
 void myExit(char *);
 void cd(char *);
 
+extern int errno;
+
 static void die(char *inpt){
     errPrint(1);
     myExit(inpt);
@@ -25,8 +27,21 @@ int main(){
     size_t size = 100;
     int k;
     char *inpt = malloc(size);
+
+    //In case malloc failed
+    if(inpt == NULL){
+        perror("malloc failed\n");
+        exit(-1);
+    }
+
     printf("$");
     while((k = getline(&inpt, &size, stdin)) > 0){
+        //in case getline used realloc
+        if(inpt == NULL){
+            perror("malloc failed\n");
+            exit(-1);
+        }
+
         if(strcmp(inpt, "\n"))
             validInput(inpt);
         printf("$");
@@ -92,8 +107,10 @@ void runProg(char *inpt){
 
     pid_t pid = fork();
 
+    //checks if fork failed
     if(pid < 0){
-        die("ERROR fork");
+        perror("fork failed");
+        myExit(inpt);
     }
     else if(pid == 0){ //child process
         execv(prgrm, args);
@@ -101,7 +118,9 @@ void runProg(char *inpt){
     }
     else{ //parent process
         if(waitpid(pid, &st, 0) != pid){
-            errPrint(1);
+            //checks if waitpid failed
+            perror("waitpid failed");
+            myExit(inpt);
         }
     }
 
@@ -151,6 +170,10 @@ void myExit(char *inpt){
 
 void cd(char *inpt){
     
+    if(inpt == NULL){
+        errPrint(0);
+        return ;
+    }
     if(strchr(inpt, '\n') != NULL)
         removeNL(inpt);
 

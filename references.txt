@@ -6,6 +6,14 @@ status was for
 2. https://cs3157.github.io/www/2022-1/resources/guides/git-tutorial.html
 Used in order for a refresher on how to use git
 
+3. https://linuxhint.com/check-malloc-error-c/
+I was unsure on how to handle a malloc error so I used this for reference
+
+4. http://www.cs.columbia.edu/~jae/3157/code/shell.c
+Im not sure if this must be cited because it was shown in class, but I put
+it here to be on the safe side. Looked at shell.c for the fork/exec lines of
+code
+
 David Gabriel Millares Bellido
 DGM2148
 
