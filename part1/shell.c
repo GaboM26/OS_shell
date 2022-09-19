@@ -13,7 +13,7 @@ void errPrint(int );
 char *progName(char *);
 void validInput(char *);
 int min(int, int);
-void myExit();
+void myExit(char *);
 void cd(char *);
 
 static void die(const char *err){
@@ -22,9 +22,10 @@ static void die(const char *err){
 }
 
 int main(){
-    char inpt[2000];
+    size_t size = 1;
+    char *inpt = malloc(size);
     printf("$");
-    while(fgets(inpt, sizeof(inpt), stdin) != NULL){
+    while((getline(&inpt, &size, stdin)) != -1){
         if(strcmp(inpt, "\n"))
             validInput(inpt);
         printf("$");
@@ -34,6 +35,7 @@ int main(){
 //something was entered as input (no blank line)
 //checks if it is valid and sends it to appropriate function
 void validInput(char *inpt){
+
     //means it is trying to go to a folder and run executable
     if(inpt[0]=='/'){
         runProg(inpt);
@@ -49,8 +51,9 @@ void validInput(char *inpt){
 
     if(strchr(spcmd, '\n') != NULL)
         removeNL(spcmd);
+    //If you are exiting, you pass original pointer
     if(!strcmp(spcmd, "exit"))
-        myExit();
+        myExit(inpt);
     else if(!strcmp(spcmd, "cd"))
         cd(strtok(NULL, " "));
     else
@@ -132,12 +135,13 @@ int min(int a, int b){
     return a;
 }
 
-void myExit(){
+
+void myExit(char *inpt){
+    free(inpt);
     exit(0);
 }
 
 void cd(char *inpt){
-    char buff[100];
     
     if(strchr(inpt, '\n') != NULL)
         removeNL(inpt);
