@@ -15,6 +15,7 @@ void validInput(char *);
 int min(int, int);
 void myExit(char *);
 void cd(char *);
+void myPrint(char *);
 
 extern int errno;
 
@@ -33,7 +34,7 @@ int main(){
         exit(EXIT_FAILURE);
     }
 
-    printf("$");
+    myPrint("$");
     if(ferror(stdout))
         errPrint(1);
     while((k = getline(&inpt, &size, stdin)) > 0){
@@ -47,7 +48,7 @@ int main(){
 
         if(strcmp(inpt, "\n"))
             validInput(inpt);
-        printf("$");
+        myPrint("$");
         if(ferror(stdout))
             errPrint(1);
     }
@@ -135,10 +136,20 @@ void removeNL(char *str){
 }
 
 void errPrint(int realErr){
-    if(realErr)
-        fprintf(stderr, "error: %s\n", strerror(errno));
-    else
-        fprintf(stderr, "error: unknown command\n");
+    char err[1000];
+    char start[] = "error: ";
+    strcpy(err, start);
+    if(!realErr){
+        strcat(err, "unknown command\n");
+    }
+    else{
+        strcat(err, strerror(errno));
+        strcat(err, "\n");
+    }
+
+    if(write(2, err, strlen(err)) != strlen(err)){
+        exit(EXIT_FAILURE);
+    }
 
     if(ferror(stderr)){
         exit(EXIT_FAILURE);
@@ -183,5 +194,10 @@ void cd(char *inpt){
 
     if(chdir(inpt))
         errPrint(1);
+}
 
+void myPrint(char *msg){
+    if(write(1, msg, strlen(msg)) == -1){
+        exit(EXIT_FAILURE);
+    }
 }
