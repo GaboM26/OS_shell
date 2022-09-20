@@ -232,15 +232,16 @@ void *myMalloc(size_t size){
 
 int myGetLine(char **buff, size_t *size){
     int bytrd;
+    char *wrkBuff = *buff;
     /* EOF  */
-    if((bytrd = read(0, *buff, *size)) == 0){
+    if((bytrd = read(0, *buff, *size - 1)) == 0){
         return 0;
     }
     else if(bytrd < 0){
         /* read error */
         return -1;
     }
-
+    wrkBuff[bytrd] = '\0';
     if(strchr(*buff, '\n'))
         return bytrd;
 
@@ -251,7 +252,8 @@ int myGetLine(char **buff, size_t *size){
     memcpy(newBuff, *buff, *size);
     munmap(*buff, *size);
 
-    while((bytrd = read(0, tempBuff, sizeof(tempBuff)))  == sizeof(tempBuff)){
+    while((bytrd = read(0, tempBuff, sizeof(tempBuff) - 1))  == sizeof(tempBuff) - 1){
+        tempBuff[bytrd] = '\0';
         strcat(newBuff, tempBuff);
         char *oldBuff = newBuff;
         newSize = newSize + 1000;
@@ -259,6 +261,7 @@ int myGetLine(char **buff, size_t *size){
         memcpy(newBuff, oldBuff, newSize -1000);
         munmap(oldBuff, newSize-1000);
     }
+    tempBuff[bytrd] = '\0';
     strcat(newBuff, tempBuff);
     *buff = newBuff;
     *size = newSize;
