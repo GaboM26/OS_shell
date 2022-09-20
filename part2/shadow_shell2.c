@@ -29,27 +29,32 @@ int main(){
     char *inpt = malloc(size);
 
     if(inpt == NULL){
-        perror("malloc failed\n");
-        exit(-1);
+        errPrint(1);
+        exit(EXIT_FAILURE);
     }
 
     printf("$");
+    if(ferror(stdout))
+        errPrint(1);
     while((k = getline(&inpt, &size, stdin)) > 0){
 
         /*in case getline used realloc*/
-        
+
         if(inpt == NULL){
-            perror("malloc failed\n");
-            exit(-1);
+            errPrint(1);
+            exit(EXIT_FAILURE);
         }
 
         if(strcmp(inpt, "\n"))
             validInput(inpt);
         printf("$");
+        if(ferror(stdout))
+            errPrint(1);
     }
 
     if(k == -1 && errno != 0){
         errPrint(1);
+        exit(EXIT_FAILURE);
     }
     /*if errno is 0 then no error occured*/
     myExit(inpt);
@@ -57,7 +62,7 @@ int main(){
 }
 
 /*something was entered as input (no blank line)
-checks if it is valid and sends it to appropriate function */
+  checks if it is valid and sends it to appropriate function */
 void validInput(char *inpt){
 
     if(inpt[0]=='/'){
@@ -106,7 +111,7 @@ void runProg(char *inpt){
 
     /*checks if fork failed*/
     if(pid < 0){
-        perror("fork failed");
+        errPrint(1);
         myExit(inpt);
     }
     else if(pid == 0){ /*child process*/
@@ -115,7 +120,7 @@ void runProg(char *inpt){
     }
     else{ /*parent process*/
         if(waitpid(pid, &st, 0) != pid){
-            perror("waitpid failed");
+            errPrint(1);
             myExit(inpt);
         }
     }
@@ -134,6 +139,10 @@ void errPrint(int realErr){
         fprintf(stderr, "error: %s\n", strerror(errno));
     else
         fprintf(stderr, "error: unknown command\n");
+
+    if(ferror(stderr)){
+        exit(EXIT_FAILURE);
+    }
 }
 
 /*Returns pointer to only the program name given a path*/
@@ -160,7 +169,7 @@ int min(int a, int b){
 
 void myExit(char *inpt){
     free(inpt);
-    exit(0);
+    exit(EXIT_SUCCESS);
 }
 
 void cd(char *inpt){
