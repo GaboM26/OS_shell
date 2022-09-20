@@ -14,6 +14,11 @@ Im not sure if this must be cited because it was shown in class, but I put
 it here to be on the safe side. Looked at shell.c for the fork/exec lines of
 code
 
+5. https://elixir.bootlin.com/linux/latest/source/tools/include/nolibc/stdlib.h#L112
+Given with OS lab spec, used for help to implement malloc and realloc. Note
+that I don't directly implement a realloc, I placed it at the bottom of
+myGetLine() function
+
 David Gabriel Millares Bellido
 DGM2148
 

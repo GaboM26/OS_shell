@@ -11,7 +11,7 @@ w4118_sh2.o: shadow_shell2.c
 
 .PHONY: clean
 clean:
-	rm -f *.o a.out core w4118_sh2
+	rm -f *.o a.out core w4118_sh2 *.txt
 
 .PHONY: all
 all: clean w4118_sh2

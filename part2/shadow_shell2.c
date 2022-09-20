@@ -6,28 +6,35 @@
 #include<sys/types.h>
 #include<errno.h>
 #include<unistd.h>
+#include<sys/mman.h>
 
-void runProg(char *);
+struct nolibc_heap {
+    size_t len;
+    char user_p[] __attribute__((__aligned__));
+};
+void runProg(char *, size_t);
 void removeNL(char *);
 void errPrint(int );
 char *progName(char *);
-void validInput(char *);
+void validInput(char *, size_t);
 int min(int, int);
-void myExit(char *);
+void myExit(char *, size_t);
 void cd(char *);
 void myPrint(char *);
+void *myMalloc(size_t );
+int myGetLine(char **, size_t *);
 
 extern int errno;
 
-static void die(char *inpt){
+static void die(char *inpt, size_t sz){
     errPrint(1);
-    myExit(inpt);
+    myExit(inpt, sz);
 }
 
 int main(){
-    size_t size = 100;
+    size_t size = 10;
     int k;
-    char *inpt = malloc(size);
+    char *inpt = (char *) myMalloc(size);
 
     if(inpt == NULL){
         errPrint(1);
@@ -37,7 +44,7 @@ int main(){
     myPrint("$");
     if(ferror(stdout))
         errPrint(1);
-    while((k = getline(&inpt, &size, stdin)) > 0){
+    while((k = myGetLine(&inpt, &size)) > 0){
 
         /*in case getline used realloc*/
 
@@ -47,7 +54,7 @@ int main(){
         }
 
         if(strcmp(inpt, "\n"))
-            validInput(inpt);
+            validInput(inpt, size);
         myPrint("$");
         if(ferror(stdout))
             errPrint(1);
@@ -58,20 +65,24 @@ int main(){
         exit(EXIT_FAILURE);
     }
     /*if errno is 0 then no error occured*/
-    myExit(inpt);
+    myExit(inpt, size);
 
 }
 
 /*something was entered as input (no blank line)
   checks if it is valid and sends it to appropriate function */
-void validInput(char *inpt){
+void validInput(char *inpt, size_t sz){
 
     if(inpt[0]=='/'){
-        runProg(inpt);
+        runProg(inpt, sz);
         return ;
     }
     else if(inpt[0] == '.' && inpt[1] == '/'){
-        runProg(inpt);
+        runProg(inpt, sz);
+        return ;
+    }
+    else if(inpt[0] == '.' && inpt[1] == '.' && inpt[2] == '/'){
+        runProg(inpt, sz);
         return ;
     }
 
@@ -85,13 +96,13 @@ void validInput(char *inpt){
         removeNL(spcmd);
 
     if(!strcmp(spcmd, "exit"))
-        myExit(inpt);
+        myExit(inpt, sz);
     else if(!strcmp(spcmd, "cd"))
         cd(strtok(NULL, " "));
     else
         errPrint(0);
 }
-void runProg(char *inpt){
+void runProg(char *inpt, size_t size){
     /*get command and save a copy to execute (manipulated pointers)*/
     int st; 
     char *tok = " ";
@@ -117,16 +128,16 @@ void runProg(char *inpt){
     /*checks if fork failed*/
     if(pid < 0){
         errPrint(1);
-        myExit(inpt);
+        myExit(inpt, size);
     }
     else if(pid == 0){ /*child process*/
         execv(prgrm, args);
-        die(inpt);
+        die(inpt, size);
     }
     else{ /*parent process*/
         if(waitpid(pid, &st, 0) != pid){
             errPrint(1);
-            myExit(inpt);
+            myExit(inpt, size);
         }
     }
 
@@ -182,8 +193,8 @@ int min(int a, int b){
 }
 
 
-void myExit(char *inpt){
-    free(inpt);
+void myExit(char *inpt,size_t size){
+    munmap(inpt, size);
     exit(EXIT_SUCCESS);
 }
 
@@ -204,4 +215,52 @@ void myPrint(char *msg){
     if(write(1, msg, strlen(msg)) == -1){
         exit(EXIT_FAILURE);
     }
+}
+
+void *myMalloc(size_t size){
+    struct nolibc_heap *heap;
+
+    size = sizeof(*heap) + size;
+    size = (size + 4095UL) & -4096UL;
+    heap = mmap(NULL, size, PROT_READ|PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
+    if(__builtin_expect(heap == MAP_FAILED, 0))
+        return NULL;
+
+    heap -> len = size;
+    return heap -> user_p;
+}
+
+int myGetLine(char **buff, size_t *size){
+    int bytrd;
+    /* EOF  */
+    if((bytrd = read(0, *buff, *size)) == 0){
+        return 0;
+    }
+    else if(bytrd < 0){
+        /* read error */
+        return -1;
+    }
+
+    if(strchr(*buff, '\n'))
+        return bytrd;
+
+    /* buffer overflowed */
+    int newSize = *size + 1000;
+    char tempBuff[1000];
+    char *newBuff = myMalloc(newSize);
+    memcpy(newBuff, *buff, *size);
+    munmap(*buff, *size);
+
+    while((bytrd = read(0, tempBuff, sizeof(tempBuff)))  == sizeof(tempBuff)){
+        strcat(newBuff, tempBuff);
+        char *oldBuff = newBuff;
+        newSize = newSize + 1000;
+        newBuff = myMalloc(newSize); 
+        memcpy(newBuff, oldBuff, newSize -1000);
+        munmap(oldBuff, newSize-1000);
+    }
+    strcat(newBuff, tempBuff);
+    *buff = newBuff;
+    *size = newSize;
+    return *size;
 }
