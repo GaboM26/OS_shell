@@ -69,6 +69,10 @@ void validInput(char *inpt){
         runProg(inpt);
         return ;
     }
+    else if(inpt[0] == '.' && inpt[1] == '/'){
+        runProg(inpt);
+        return ;
+    }
 
     /*Manipulate input now that we know its not trying to go to folder*/
     char myInpt[strlen(inpt) + 1];
