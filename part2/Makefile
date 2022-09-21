@@ -23,3 +23,6 @@ do: all
 .PHONY: val
 val: all
 	valgrind --leak-check=yes ./w4118_sh2
+
+trace2.txt: w4118_sh2
+	strace -o trace2.txt ./w4118_sh2 
