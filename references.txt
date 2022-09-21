@@ -16,8 +16,12 @@ code
 
 5. https://elixir.bootlin.com/linux/latest/source/tools/include/nolibc/stdlib.h#L112
 Given with OS lab spec, used for help to implement malloc and realloc. Note
-that I don't directly implement a realloc, I placed it at the bottom of
+that I don't directly implement a function named realloc, I just simply
+wrote code that does the same thing as realloc and placed it at the bottom of
 myGetLine() function
+
+6. https://commons.wikimedia.org/wiki/File:ASCII-Table-wide.svg
+Used to see the actual ASCII values of the corresponding chars to fill in the main.c file. 
 
 David Gabriel Millares Bellido
 DGM2148
