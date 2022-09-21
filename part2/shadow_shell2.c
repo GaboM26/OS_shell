@@ -8,10 +8,6 @@
 #include<unistd.h>
 #include<sys/mman.h>
 
-struct nolibc_heap {
-    size_t len;
-    char user_p[] __attribute__((__aligned__));
-};
 void runProg(char *, size_t);
 void removeNL(char *);
 void errPrint(int );
@@ -32,7 +28,7 @@ static void die(char *inpt, size_t sz){
 }
 
 int main(){
-    size_t size = 10;
+    size_t size = 100;
     int k;
     char *inpt = (char *) myMalloc(size);
 
@@ -218,16 +214,12 @@ void myPrint(char *msg){
 }
 
 void *myMalloc(size_t size){
-    struct nolibc_heap *heap;
-
-    size = sizeof(*heap) + size;
-    size = (size + 4095UL) & -4096UL;
-    heap = mmap(NULL, size, PROT_READ|PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
-    if(__builtin_expect(heap == MAP_FAILED, 0))
+    void *hp;
+    hp = mmap(NULL, size, PROT_READ|PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
+    if(__builtin_expect(hp == MAP_FAILED, 0))
         return NULL;
 
-    heap -> len = size;
-    return heap -> user_p;
+    return hp;
 }
 
 int myGetLine(char **buff, size_t *size){
@@ -253,6 +245,8 @@ int myGetLine(char **buff, size_t *size){
     munmap(*buff, *size);
 
     while((bytrd = read(0, tempBuff, sizeof(tempBuff) - 1))  == sizeof(tempBuff) - 1){
+        if(strchr(tempBuff, '\n'))
+            break ;
         tempBuff[bytrd] = '\0';
         strcat(newBuff, tempBuff);
         char *oldBuff = newBuff;
@@ -260,6 +254,8 @@ int myGetLine(char **buff, size_t *size){
         newBuff = myMalloc(newSize); 
         memcpy(newBuff, oldBuff, newSize -1000);
         munmap(oldBuff, newSize-1000);
+        if(strchr(tempBuff, '\n'))
+            break ;
     }
     tempBuff[bytrd] = '\0';
     strcat(newBuff, tempBuff);
