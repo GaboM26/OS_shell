@@ -6,8 +6,8 @@ LDLIBS =
 
 w4118_sh2: w4118_sh2.o
 
-w4118_sh2.o: shadow_shell2.c
-	$(CC) -c shadow_shell2.c $(CFLAGS) -o w4118_sh2.o
+w4118_sh2.o: shell2.c
+	$(CC) -c shell2.c $(CFLAGS) -o w4118_sh2.o
 
 .PHONY: clean
 clean:
