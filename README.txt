@@ -338,7 +338,7 @@ Part 3|
 Part 3 works just as expected. Simple program written using int pointers to
 write to accurate locations in memory for my hello, world OS. This does mean
 that this program I wrote (in an x86 computer) will only work in little
-endian machines (due to the order of the bits). My Makefile
+endian machines (due to the order of the bytes). My Makefile
 creates a floppy disk after typing make. Screenshot of a test run is
 committed along with the files (png file). In order to center the hello
 world OS, I used the fact that the "default VGA console can print 80*25
