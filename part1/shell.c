@@ -6,15 +6,30 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-void runProg(char *inpt);
-void removeNL(char *str);
-void errPrint(int realErr);
-char *progName(char *path);
-void validInput(char *inpt);
-int min(int a, int b);
-void myExit(char *inpt);
-void cd(char *inpt);
 
+int min(int a, int b)
+{
+	if (a > b)
+		return b;
+	return a;
+}
+
+void errPrint(int realErr)
+{
+	if (realErr)
+		fprintf(stderr, "error: %s\n", strerror(errno));
+	else
+		fprintf(stderr, "error: unknown command\n");
+
+	if (ferror(stderr))
+		exit(EXIT_FAILURE);
+}
+
+void myExit(char *inpt)
+{
+	free(inpt);
+	exit(EXIT_SUCCESS);
+}
 
 static void die(char *inpt)
 {
@@ -22,75 +37,38 @@ static void die(char *inpt)
 	myExit(inpt);
 }
 
-int main(void)
+/* removes next line from a string
+ * Note that the only case this will happen is if one presses
+ * enter at the very end due to how fgets works
+ */
+void removeNL(char *str) { str[strlen(str) - 1] = 0; }
+
+void cd(char *inpt)
 {
-	size_t size = 100;
-	int k;
-	char *inpt = malloc(size);
 
 	if (inpt == NULL) {
-		errPrint(1);
-		exit(EXIT_FAILURE);
+		errPrint(0);
+		return;
 	}
+	if (strchr(inpt, '\n') != NULL)
+		removeNL(inpt);
 
-	printf("$");
-	if (ferror(stdout))
+	if (chdir(inpt))
 		errPrint(1);
-	while ((k = getline(&inpt, &size, stdin)) > 0) {
-
-		/*in case getline used realloc*/
-
-		if (inpt == NULL) {
-			errPrint(1);
-			exit(EXIT_FAILURE);
-		}
-
-		if (strcmp(inpt, "\n"))
-			validInput(inpt);
-		printf("$");
-		if (ferror(stdout))
-			errPrint(1);
-	}
-
-	if (k == -1 && errno != 0) {
-		errPrint(1);
-		exit(EXIT_FAILURE);
-	}
-	/*if errno is 0 then no error occured*/
-	myExit(inpt);
 }
 
-/*
- * something was entered as input (no blank line)
- * checks if it is valid and sends it to appropriate function
- */
-void validInput(char *inpt)
+char *progName(char *path)
 {
+	char *delim = "/";
+	char *name = strtok(path, delim);
+	char *tmp;
 
-	if (inpt[0] == '/') {
-		runProg(inpt);
-		return;
-	} else if (inpt[0] == '.' && inpt[1] == '/') {
-		runProg(inpt);
-		return;
-	}
+	while ((tmp = strtok(NULL, delim)) != NULL)
+		name = tmp;
 
-	/*Manipulate input now that we know its not trying to go to folder*/
-	char myInpt[strlen(inpt) + 1];
-
-	strcpy(myInpt, inpt);
-
-	char *spcmd = strtok(myInpt, " ");
-
-	if (strchr(spcmd, '\n') != NULL)
-		removeNL(spcmd);
-
-	if (!strcmp(spcmd, "exit"))
-		myExit(inpt);
-	else if (!strcmp(spcmd, "cd"))
-		cd(strtok(NULL, " "));
-	else
-		errPrint(0);
+	if (strchr(name, '\n') != NULL)
+		removeNL(name);
+	return name;
 }
 
 void runProg(char *inpt)
@@ -134,61 +112,84 @@ void runProg(char *inpt)
 	}
 }
 
-/* removes next line from a string
- * Note that the only case this will happen is if one presses
- * enter at the very end due to how fgets works
+/*
+ * something was entered as input (no blank line)
+ * checks if it is valid and sends it to appropriate function
  */
-void removeNL(char *str) { str[strlen(str) - 1] = 0; }
-
-void errPrint(int realErr)
-{
-	if (realErr)
-		fprintf(stderr, "error: %s\n", strerror(errno));
-	else
-		fprintf(stderr, "error: unknown command\n");
-
-	if (ferror(stderr))
-		exit(EXIT_FAILURE);
-}
-
-/*Returns pointer to only the program name given a path*/
-char *progName(char *path)
-{
-	char *delim = "/";
-	char *name = strtok(path, delim);
-	char *tmp;
-
-	while ((tmp = strtok(NULL, delim)) != NULL)
-		name = tmp;
-
-	if (strchr(name, '\n') != NULL)
-		removeNL(name);
-	return name;
-}
-
-int min(int a, int b)
-{
-	if (a > b)
-		return b;
-	return a;
-}
-
-void myExit(char *inpt)
-{
-	free(inpt);
-	exit(EXIT_SUCCESS);
-}
-
-void cd(char *inpt)
+void validInput(char *inpt)
 {
 
-	if (inpt == NULL) {
-		errPrint(0);
+	if (inpt[0] == '/') {
+		runProg(inpt);
+		return;
+	} else if (inpt[0] == '.' && inpt[1] == '/') {
+		runProg(inpt);
+		return;
+	} else if (inpt[0] == '.' && inpt[1] == '.' && inpt[2] == '/') {
+		runProg(inpt);
 		return;
 	}
-	if (strchr(inpt, '\n') != NULL)
-		removeNL(inpt);
 
-	if (chdir(inpt))
+	/*Manipulate input now that we know its not trying to go to folder*/
+	char myInpt[strlen(inpt) + 1];
+
+	strcpy(myInpt, inpt);
+
+	char *spcmd = strtok(myInpt, " ");
+
+	if (strchr(spcmd, '\n') != NULL)
+		removeNL(spcmd);
+
+	if (!strcmp(spcmd, "exit"))
+		myExit(inpt);
+	else if (!strcmp(spcmd, "cd"))
+		cd(strtok(NULL, " "));
+	else
+		errPrint(0);
+}
+
+
+
+
+/*Returns pointer to only the program name given a path*/
+
+
+
+
+int main(void)
+{
+	size_t size = 100;
+	int k;
+	char *inpt = malloc(size);
+
+	if (inpt == NULL) {
 		errPrint(1);
+		exit(EXIT_FAILURE);
+	}
+
+	printf("$");
+	if (ferror(stdout))
+		errPrint(1);
+	while ((k = getline(&inpt, &size, stdin)) > 0) {
+
+		/*in case getline used realloc*/
+
+		if (inpt == NULL) {
+			errPrint(1);
+			exit(EXIT_FAILURE);
+		}
+
+		if (strcmp(inpt, "\n"))
+			validInput(inpt);
+		printf("$");
+		if (ferror(stdout))
+			errPrint(1);
+	}
+
+	if (k == -1 && errno != 0) {
+		errPrint(1);
+		exit(EXIT_FAILURE);
+	}
+	/*if errno is 0 then no error occured*/
+	myExit(inpt);
 }
