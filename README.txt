@@ -335,4 +335,26 @@ from read(). In the end, part 2 worked just as required.
 -------------------------------------------------------------------------------
 Part 3|
 -------
+Part 3 works just as expected. Simple program written using int pointers to
+write to accurate locations in memory for my hello, world OS. This does mean
+that this program I wrote (in an x86 computer) will only work in little
+endian machines (due to the order of the bits). My Makefile
+creates a floppy disk after typing make. Screenshot of a test run is
+committed along with the files (png file). In order to center the hello
+world OS, I used the fact that the "default VGA console can print 80*25
+characters". This is equivalent to 2000 characters. However, each character
+takes 2 bytes: one for the ascii value and the other for the colors
+(background/foreground). Therefore, the VGA Console stretches 4000 bytes.
+I therefore centered it around the 2000th byte due to this, because that is
+the center of the console screen. I used white background and black
+foreground as was required. 
 
+ASSUMPTION: Due to an edstem post, I found out that our submission only
+needs to be correct for our machine. Since I work in an x86 machine that is
+Little Endian, I assume that the machine my hello world OS will be ran on
+is a little endian machine as well. 
+...............................................................................
+Test Run|
+--------
+Image named helloWorldOS.png turned in with files that shows a test run of
+my floppy disk. 
